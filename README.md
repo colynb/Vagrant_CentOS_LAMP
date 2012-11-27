@@ -1,0 +1,1 @@
+A Vagrant configured CentOS 6.3 64 box running Apache/PHP/MySQL
