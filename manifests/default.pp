@@ -49,6 +49,7 @@ class webserver {
 
 	package { "httpd": }
 	package { ["mysql-server", "mysql"]: }
+	package { "memcached": }
 	package { "php": }
 	package { "php-pdo": }
 	package { "php-mysql": }
@@ -67,12 +68,7 @@ class webserver {
 		source => "puppet:////vagrant/manifests/files/my.cnf",
 		require => Package["mysql-server"]
 	}
-}
 
-
-
-class dataprepare {
-	
 	file { "/home/vagrant/grants.sql":
 		source => "puppet:////vagrant/manifests/files/grants.sql",
 		require => Package["mysql-server"]
@@ -82,29 +78,29 @@ class dataprepare {
 		source => "puppet:////vagrant/manifests/files/data.sql",
 		require => Package["mysql-server"]
 	}
+}
 
+class mysqlexecs {
 	exec { "db-init":
 		command => "mysql -uroot < /home/vagrant/data.sql",
-		subscribe  => File["/home/vagrant/data.sql"],
 		path =>"/bin:/usr/bin"
 	}
 
 	exec { "mysql-permissions":
 		command => "mysql -uroot < /home/vagrant/grants.sql",
-		subscribe  => File["/home/vagrant/grants.sql"],
-		path =>"/bin:/usr/bin"
+		path => "/bin:/usr/bin"
 	}
 }
+stage { mysqlexecs: }
+
 
 stage { pre: before => Stage[main] }
-stage { webstart: before => Stage[dataprepare] }
-stage { dataprepare: }
 class { common: stage => pre }
-class { webserver: stage => webstart }
-class { dataprepare: stage => dataprepare }
 
+stage { webstart: before => Stage[mysqlexecs] }
+class { webserver: stage => webstart }
 
 include common
 include webserver	
-include dataprepare	
+include mysqlexecs	
 	
