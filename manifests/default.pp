@@ -63,18 +63,36 @@ class webserver {
 		subscribe => File['mysql-conf']
 	}
 
+	file { "php-ini":
+		path => "/etc/php.d/php.ini",
+		source => "puppet:////vagrant/manifests/files/php.ini",
+		require => Package["php"]
+	}
+
+	file { "httpd-conf":
+		owner  => root,
+		group  => root,
+		mode   => 644,
+		path => "/etc/httpd/conf.d/httpd-vhosts.conf",
+		source => "puppet:////vagrant/manifests/files/httpd-vhosts.conf",
+		require => Package["httpd"],
+		notify => Service["httpd"]
+	}
+
 	file { "mysql-conf":
 		path => "/etc/my.cnf",
 		source => "puppet:////vagrant/manifests/files/my.cnf",
 		require => Package["mysql-server"]
 	}
 
-	file { "/home/vagrant/grants.sql":
+	file { "sql-grants":
+		path => "/home/vagrant/grants.sql",
 		source => "puppet:////vagrant/manifests/files/grants.sql",
 		require => Package["mysql-server"]
 	}
 
-	file { "/home/vagrant/data.sql":
+	file { "mysql-data-init":
+		path => "/home/vagrant/data.sql",
 		source => "puppet:////vagrant/manifests/files/data.sql",
 		require => Package["mysql-server"]
 	}
