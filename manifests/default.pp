@@ -7,6 +7,10 @@ class common {
 		source => "puppet:////vagrant/manifests/files/common.sh"
 	}
 
+	exec { 'yum-update':
+	    command => '/usr/bin/yum -y update'
+	}
+
 	exec { "common":
 		command => "/bin/bash /root/common.sh",
 		cwd => "/root",
@@ -35,8 +39,6 @@ class common {
 
 }
 
-
-
 class webserver {
 	Package {
 		ensure => "installed"
@@ -47,10 +49,17 @@ class webserver {
 		require => Package["httpd"]
 	}
 
+	service { "memcached":
+		ensure => running,
+		require => Package["memcached"]
+	}
+
+	package { "memcached": }
 	package { "httpd": }
 	package { ["mysql-server", "mysql"]: }
-	package { "memcached": }
 	package { "php": }
+	package { "php-devel": }
+	package { "php-pear": }
 	package { "php-pdo": }
 	package { "php-mysql": }
 
@@ -95,6 +104,12 @@ class webserver {
 		path => "/home/vagrant/data.sql",
 		source => "puppet:////vagrant/manifests/files/data.sql",
 		require => Package["mysql-server"]
+	}
+
+	exec { "pecl-install-memcache":
+		command => 'printf "\n" | pecl install memcache',
+		path =>"/bin:/usr/bin",
+		require => Package["php-devel", "php-pear"]
 	}
 }
 

@@ -7,4 +7,5 @@ Vagrant::Config.run do |config|
     config.vm.network :hostonly, "33.33.33.11"
     config.vm.forward_port 80, 8080
     config.vm.provision :puppet
+    config.vm.customize ["modifyvm", :id, "--memory", "512"]
 end
