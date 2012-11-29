@@ -16,12 +16,20 @@ class website {
 # MYSQL
 # =================================================================
 	
-	class { 'mysql': }
-	class { 'mysql::server': 
-		config_hash => { 'bind_address' => '0.0.0.0' }
+	service { "mysqld":
+		ensure => running,
+		hasstatus => true,
+		hasrestart => true,
+		require => Package["mysql-server"],
+		restart => true
 	}
-	database_grant{'root@%':
-		privileges => [all],
+	package { ["mysql-server", "mysql"]: }
+	file { "my.cnf":
+		owner  => root,
+		group  => root,
+		mode   => 644,
+		path => "/etc/my.cnf",
+		source => "puppet:////vagrant/manifests/files/my.cnf",
 	}
 	file { "mysql-data-init":
 		owner  => root,
@@ -31,7 +39,8 @@ class website {
 		source => "puppet:////vagrant/data/test.sql",
 	}
 	exec { "db-init":
-		command => "/usr/bin/mysql -uroot < /home/vagrant/test.sql",
+		command => "/usr/bin/mysql -uroot < /home/vagrant/test.sql > /home/vagrant/data-import.log",
+		creates => "/home/vagrant/data-import.log",
 		require => Service['mysqld']
 	}
 
