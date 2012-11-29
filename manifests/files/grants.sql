@@ -1,3 +1,0 @@
-USE `mysql`;
-GRANT ALL ON *.* to root@'33.33.33.1' IDENTIFIED BY '';
-FLUSH PRIVILEGES;
